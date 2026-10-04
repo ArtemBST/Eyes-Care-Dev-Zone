@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Загрузка... | Eye Care & Dev Zone</title>
+
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4f46e5">
+    <link rel="apple-touch-icon" href="icons/icon-512x512.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="EyeCare">
+    <link rel="icon" type="image/png" href="icons/icon-512x512.png">
+
+    <!-- Стили и иконки -->
+    <link rel="stylesheet" href="tailwind.css">
+    <link rel="stylesheet" href="all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+        
+        /* Запрет свайпа для обновления страницы */
+        html, body {
+            overscroll-behavior-y: contain;
+            overscroll-behavior: none;
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
+            font-family: 'Inter', sans-serif;
+            background-color: #020617;
+        }
+
+        @keyframes pulse-ring {
+            0% { transform: scale(0.9); opacity: 0.8; }
+            50% { transform: scale(1.15); opacity: 0.3; }
+            100% { transform: scale(0.9); opacity: 0.8; }
+        }
+
+        .pulse-animation {
+            animation: pulse-ring 2s infinite ease-in-out;
+        }
+    </style>
+</head>
+<body class="text-slate-100 min-h-screen flex flex-col items-center justify-center p-4 overflow-hidden">
+
+    <div class="relative flex items-center justify-center mb-8">
+        <div class="absolute w-36 h-36 rounded-full bg-indigo-500 bg-opacity-20 pulse-animation"></div>
+        <div class="w-24 h-24 rounded-2xl bg-gradient-to-tr from-indigo-600 to-cyan-500 flex items-center justify-center shadow-xl z-10">
+            <i class="fa-solid fa-eye text-4xl text-white animate-pulse"></i>
+        </div>
+    </div>
+
+    <h1 class="text-2xl font-black bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent mb-2 text-center">
+        Eye Care & Dev Zone
+    </h1>
+    <p class="text-xs text-slate-400 mb-8 font-medium text-center">Загружаем компоненты и подготавливаем таймер...</p>
+
+    <div class="w-full max-w-xs bg-slate-900 border border-slate-800 p-1 rounded-full shadow-inner mb-3">
+        <div id="progress-bar" class="bg-gradient-to-r from-indigo-500 to-cyan-400 h-2.5 rounded-full w-0 transition-all duration-300 ease-out"></div>
+    </div>
+
+    <span id="loading-status" class="text-xs font-mono text-slate-500 uppercase tracking-widest">Загрузка...</span>
+
+    <script>
+        const progressBar = document.getElementById('progress-bar');
+        const loadingStatus = document.getElementById('loading-status');
+
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                progressBar.style.width = '100%';
+                loadingStatus.textContent = "Готово!";
+            }, 100);
+
+            setTimeout(() => {
+                window.location.href = "app.html"; 
+            }, 600);
+        });
+    </script>
+
+    <script>
+        // ============================================
+        //  РЕГИСТРАЦИЯ SERVICE WORKER
+        // ============================================
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then((registration) => {
+                        console.log('✅ SW зарегистрирован:', registration.scope);
+                    })
+                    .catch((error) => {
+                        console.error('❌ Ошибка SW:', error);
+                    });
+            });
+        }
+
+        // ============================================
+        //  БЛОКИРОВКА СВАЙПА ДЛЯ ОБНОВЛЕНИЯ
+        // ============================================
+        let lastTouchY = 0;
+        let isPullingDown = false;
+
+        document.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) {
+                lastTouchY = e.touches[0].clientY;
+                isPullingDown = window.scrollY === 0;
+            }
+        }, { passive: true });
+
+        document.addEventListener('touchmove', (e) => {
+            if (!isPullingDown || e.touches.length !== 1) return;
+            const currentY = e.touches[0].clientY;
+            const deltaY = currentY - lastTouchY;
+            if (window.scrollY === 0 && deltaY > 10) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        document.addEventListener('touchend', () => {
+            isPullingDown = false;
+        }, { passive: true });
+    </script>
+</body>
+</html>

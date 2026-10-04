@@ -1,0 +1,27 @@
+{
+    "name": "Eye Care & Dev Zone",
+    "short_name": "EyeCare",
+    "description": "Играй, береги зрение и прокачивай скиллы разработчика!",
+    "lang": "ru",
+    "start_url": "./index.html",
+    "scope": "./",
+    "display": "standalone",
+    "orientation": "portrait",
+    "theme_color": "#4f46e5",
+    "background_color": "#020617",
+    "categories": ["health", "education", "games"],
+    "icons": [
+        {
+            "src": "icons/icon-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "icons/icon-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ]
+}

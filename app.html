@@ -1,0 +1,1243 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Eye Health & Dev Mini-Games</title>
+
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4f46e5">
+    <link rel="apple-touch-icon" href="icons/icon-512x512.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="EyeCare">
+    <link rel="icon" type="image/png" href="icons/icon-512x512.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://yandex.ru/ads/system/context.js" async></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        
+        html, body {
+            overscroll-behavior-y: contain;
+            overscroll-behavior: none;
+            touch-action: manipulation;
+            font-family: 'Inter', sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        @keyframes pulse-ring {
+            0% { transform: scale(0.8); opacity: 0.8; }
+            50% { transform: scale(1.2); opacity: 0.3; }
+            100% { transform: scale(0.8); opacity: 0.8; }
+        }
+
+        .pulse-animation {
+            animation: pulse-ring 4s infinite ease-in-out;
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #1f2937; }
+        ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 3px; }
+
+        .lang-btn {
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 12px;
+            cursor: pointer;
+            transition: 0.3s;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.05);
+            color: #94a3b8;
+        }
+        .lang-btn.active {
+            background: #4f46e5;
+            color: #fff;
+            border-color: #4f46e5;
+        }
+        .lang-btn:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between overflow-x-hidden pb-16">
+
+    <header class="bg-slate-900 border-b border-slate-800 p-4 sticky top-0 z-30 shadow-lg">
+        <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center space-x-3">
+                <div class="bg-indigo-600 p-2.5 rounded-xl text-white shadow-md shadow-indigo-500/20">
+                    <i class="fa-solid fa-eye text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">Eye Care & Dev Zone</h1>
+                    <p class="text-xs text-slate-400" data-i18n="tagline">Играй и береги зрение!</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <div class="flex items-center gap-1 bg-slate-950 px-2 py-1.5 rounded-xl border border-slate-800">
+                    <button id="lang-ru" class="lang-btn active" onclick="setLang('ru')">🇷🇺 RU</button>
+                    <button id="lang-en" class="lang-btn" onclick="setLang('en')">🇬🇧 EN</button>
+                </div>
+
+                <div class="bg-slate-950 px-4 py-2 rounded-2xl border border-slate-800 shadow-inner">
+                    <div class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold" data-i18n="untilBreak">До перерыва</div>
+                    <div id="timer-display" class="font-mono text-xl font-extrabold text-cyan-400">20:00</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-6xl w-full mx-auto p-4 flex-grow flex flex-col gap-6">
+        
+        <div class="bg-slate-900 p-3 rounded-2xl border border-slate-800 flex flex-wrap items-center justify-between gap-2">
+            <span class="text-xs font-semibold text-slate-400 flex items-center gap-2">
+                <i class="fa-solid fa-clock text-cyan-400"></i> <span data-i18n="restTime">Время отдыха:</span>
+            </span>
+            <div class="flex gap-1.5" id="rest-time-selector">
+                <button onclick="setRestTime(10)" id="rest-btn-10" class="px-3 py-1.5 text-xs rounded-xl border border-slate-700 bg-slate-950 text-slate-300 font-bold transition hover:bg-slate-800">10 <span data-i18n="sec">сек</span></button>
+                <button onclick="setRestTime(20)" id="rest-btn-20" class="px-3 py-1.5 text-xs rounded-xl border border-slate-700 bg-slate-950 text-slate-300 font-bold transition hover:bg-slate-800">20 <span data-i18n="sec">сек</span></button>
+                <button onclick="setRestTime(30)" id="rest-btn-30" class="px-3 py-1.5 text-xs rounded-xl border border-slate-700 bg-slate-950 text-slate-300 font-bold transition hover:bg-slate-800">30 <span data-i18n="sec">сек</span></button>
+                <button onclick="setRestTime(60)" id="rest-btn-60" class="px-3 py-1.5 text-xs rounded-xl border border-slate-700 bg-slate-950 text-slate-300 font-bold transition hover:bg-slate-800">1 <span data-i18n="min">мин</span></button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-4 gap-2 p-1.5 bg-slate-900 rounded-2xl border border-slate-800">
+            <button id="nav-catcher" onclick="switchGame('catcher')" class="game-nav-btn flex items-center justify-center gap-2 py-3 px-2 rounded-xl font-medium text-xs transition bg-indigo-600 text-white shadow-md">
+                <i class="fa-solid fa-gamepad"></i> <span class="hidden sm:inline" data-i18n="navCatcher">Ловец</span>
+            </button>
+            <button id="nav-clicker" onclick="switchGame('clicker')" class="game-nav-btn flex items-center justify-center gap-2 py-3 px-2 rounded-xl font-medium text-xs transition text-slate-400 hover:text-white hover:bg-slate-800">
+                <i class="fa-solid fa-hand-pointer"></i> <span class="hidden sm:inline" data-i18n="navClicker">Кликер</span>
+            </button>
+            <button id="nav-quiz" onclick="switchGame('quiz')" class="game-nav-btn flex items-center justify-center gap-2 py-3 px-2 rounded-xl font-medium text-xs transition text-slate-400 hover:text-white hover:bg-slate-800">
+                <i class="fa-solid fa-brain"></i> <span class="hidden sm:inline" data-i18n="navQuiz">Викторина</span>
+            </button>
+            <button id="nav-stats" onclick="switchGame('stats')" class="game-nav-btn flex items-center justify-center gap-2 py-3 px-2 rounded-xl font-medium text-xs transition text-slate-400 hover:text-white hover:bg-slate-800">
+                <i class="fa-solid fa-chart-simple"></i> <span class="hidden sm:inline" data-i18n="navStats">Стата</span>
+            </button>
+        </div>
+
+        <!-- Игра 1: Ловец Кода -->
+        <section id="game-catcher" class="game-section flex flex-col items-center justify-center bg-slate-900 border border-slate-800 rounded-3xl p-4 sm:p-6 relative overflow-hidden shadow-2xl">
+            <div class="w-full flex justify-between items-center mb-4 px-2">
+                <div>
+                    <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-bug text-indigo-400"></i> <span data-i18n="catcherTitle">Ловец Кода</span>
+                    </h2>
+                    <p class="text-xs text-slate-400" data-i18n="catcherSub">Лови фичи `{ }`, избегай багов `🐛`!</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button id="pause-btn" onclick="togglePauseCatcher()" class="hidden bg-slate-800 hover:bg-slate-700 text-white w-10 h-10 rounded-xl border border-slate-700 transition active:scale-95 flex items-center justify-center">
+                        <i class="fa-solid fa-pause" id="pause-icon"></i>
+                    </button>
+                    <div class="text-right">
+                        <span class="text-xs text-slate-400 uppercase tracking-wider block" data-i18n="score">Счет</span>
+                        <span id="catcher-score" class="text-2xl font-black text-indigo-400 font-mono">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="relative w-full max-w-lg aspect-[4/3] bg-slate-950 rounded-2xl border border-slate-800 overflow-hidden shadow-inner flex items-center justify-center">
+                <canvas id="catcherCanvas" class="w-full h-full block"></canvas>
+
+                <div id="catcher-start-screen" class="absolute inset-0 bg-slate-950/90 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center z-10">
+                    <div class="w-16 h-16 bg-indigo-500/20 text-indigo-400 rounded-full flex items-center justify-center text-3xl mb-4 border border-indigo-500/30">
+                        <i class="fa-solid fa-laptop-code"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-white mb-2" data-i18n="catcherTitle">Ловец Кода</h3>
+                    <p class="text-slate-400 text-sm mb-6 max-w-xs" data-i18n="catcherDesc">Двигай платформу влево/вправо стрелками или пальцем по экрану.</p>
+                    <button onclick="startCatcherGame()" class="bg-gradient-to-r from-indigo-500 to-cyan-500 hover:from-indigo-600 hover:to-cyan-600 text-white font-bold py-3.5 px-8 rounded-xl shadow-lg transition transform active:scale-95 cursor-pointer z-20" data-i18n="startGame">
+                        Начать игру
+                    </button>
+                </div>
+
+                <div id="catcher-pause-screen" class="absolute inset-0 bg-slate-950/90 backdrop-blur-sm hidden flex-col items-center justify-center p-6 text-center z-10">
+                    <div class="w-16 h-16 bg-amber-500/20 text-amber-400 rounded-full flex items-center justify-center text-3xl mb-4 border border-amber-500/30">
+                        <i class="fa-solid fa-pause"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-white mb-2" data-i18n="paused">ПАУЗА</h3>
+                    <p class="text-slate-400 text-sm mb-6 max-w-xs" data-i18n="pauseDesc">Игра приостановлена. Отдохни немного!</p>
+                    <button onclick="togglePauseCatcher()" class="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold py-3.5 px-8 rounded-xl shadow-lg transition transform active:scale-95 cursor-pointer z-20" data-i18n="resume">
+                        ▶ Продолжить
+                    </button>
+                </div>
+            </div>
+
+            <div class="w-full max-w-lg flex gap-4 mt-4 sm:hidden">
+                <button id="btn-move-left" class="flex-1 bg-slate-800 active:bg-indigo-600 text-white py-4 rounded-xl text-xl font-bold border border-slate-700 active:scale-95 transition">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+                <button id="btn-move-right" class="flex-1 bg-slate-800 active:bg-indigo-600 text-white py-4 rounded-xl text-xl font-bold border border-slate-700 active:scale-95 transition">
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- Игра 2: Dev Кликер -->
+        <section id="game-clicker" class="game-section hidden flex-col items-center justify-center bg-slate-900 border border-slate-800 rounded-3xl p-4 sm:p-6 shadow-2xl">
+            <div class="w-full max-w-xl flex flex-col items-center">
+                <div class="text-center mb-6">
+                    <span id="clicker-rank" class="text-xs uppercase font-bold tracking-widest text-cyan-400 bg-cyan-950/80 px-3 py-1 rounded-full border border-cyan-800/50">Intern Trainee 🐣</span>
+                    <div id="clicker-count" class="text-5xl font-black text-white font-mono mt-3">0</div>
+                    <div class="text-xs text-slate-400 mt-1" data-i18n="locText">строк кода (LoC)</div>
+                </div>
+
+                <button id="clicker-btn" class="w-44 h-44 sm:w-52 sm:h-52 rounded-full bg-gradient-to-br from-indigo-500 via-purple-600 to-pink-500 p-1 shadow-2xl shadow-indigo-500/30 hover:scale-105 active:scale-95 transition-all duration-150 flex items-center justify-center my-4 group cursor-pointer">
+                    <div class="w-full h-full rounded-full bg-slate-950 flex flex-col items-center justify-center p-4 border border-indigo-400/30 group-hover:bg-slate-900 transition">
+                        <i class="fa-solid fa-code text-5xl sm:text-6xl text-indigo-400 group-hover:scale-110 transition"></i>
+                        <span class="text-xs font-bold text-slate-400 mt-2" data-i18n="click">ЖМИ!</span>
+                    </div>
+                </button>
+
+                <div class="w-full mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <button id="buy-auto" onclick="buyClickerUpgrade('auto')" class="bg-slate-950 hover:bg-slate-800 border border-slate-800 p-4 rounded-2xl flex items-center justify-between text-left transition disabled:opacity-50 disabled:cursor-not-allowed">
+                        <div>
+                            <div class="font-bold text-sm text-white flex items-center gap-2">
+                                <i class="fa-solid fa-robot text-indigo-400"></i> <span data-i18n="autoScript">Авто-Скрипт</span>
+                            </div>
+                            <div class="text-xs text-slate-400 mt-0.5" data-i18n="autoDesc">+1 код/сек</div>
+                        </div>
+                        <span id="cost-auto" class="text-xs font-bold text-amber-400 bg-amber-950/50 px-2.5 py-1.5 rounded-lg border border-amber-800/50">15 LoC</span>
+                    </button>
+
+                    <button id="buy-multiplier" onclick="buyClickerUpgrade('mult')" class="bg-slate-950 hover:bg-slate-800 border border-slate-800 p-4 rounded-2xl flex items-center justify-between text-left transition disabled:opacity-50 disabled:cursor-not-allowed">
+                        <div>
+                            <div class="font-bold text-sm text-white flex items-center gap-2">
+                                <i class="fa-solid fa-mug-hot text-amber-400"></i> <span data-i18n="coffeeBoost">Кофе-Буст</span>
+                            </div>
+                            <div class="text-xs text-slate-400 mt-0.5" data-i18n="coffeeDesc">+1 к клику</div>
+                        </div>
+                        <span id="cost-mult" class="text-xs font-bold text-amber-400 bg-amber-950/50 px-2.5 py-1.5 rounded-lg border border-amber-800/50">30 LoC</span>
+                    </button>
+                </div>
+
+                <div class="w-full mt-6 flex flex-col gap-3">
+                    <button onclick="watchAdForReward()" class="w-full py-4 px-6 bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 hover:from-amber-600 hover:to-yellow-500 text-slate-950 font-black rounded-2xl shadow-xl flex items-center justify-center gap-3 transition transform active:scale-95 cursor-pointer border border-yellow-300">
+                        <i class="fa-solid fa-gift text-2xl animate-bounce"></i>
+                        <span class="text-base uppercase tracking-wider" data-i18n="watchAd">Смотреть рекламу (Приз!)</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Игра 3: IT Викторина -->
+        <section id="game-quiz" class="game-section hidden flex-col items-center justify-center bg-slate-900 border border-slate-800 rounded-3xl p-4 sm:p-6 shadow-2xl">
+            <div class="w-full max-w-xl">
+                <div class="flex justify-between items-center mb-6 border-b border-slate-800 pb-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-lightbulb text-amber-400"></i> <span data-i18n="quizTitle">IT Викторина</span>
+                        </h2>
+                        <p class="text-xs text-slate-400" data-i18n="quizSub">Проверь свои знания и логику!</p>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-xs text-slate-400 uppercase tracking-wider block" data-i18n="score">Счет</span>
+                        <span id="quiz-score" class="text-xl font-black text-amber-400 font-mono">0</span>
+                    </div>
+                </div>
+
+                <div class="bg-slate-950 border border-slate-800 rounded-2xl p-6 mb-6">
+                    <span id="quiz-category" class="text-[10px] font-extrabold uppercase tracking-widest text-indigo-400 bg-indigo-950 px-2.5 py-1 rounded-md border border-indigo-800/50">Вопрос 1</span>
+                    <h3 id="quiz-question" class="text-lg font-semibold text-white mt-3 min-h-[60px]">Загрузка вопроса...</h3>
+                </div>
+
+                <div id="quiz-options" class="grid grid-cols-1 gap-3"></div>
+                <div id="quiz-feedback" class="mt-4 text-center text-sm font-semibold min-h-[24px]"></div>
+            </div>
+        </section>
+
+        <!-- Секция Статистики -->
+        <section id="game-stats" class="game-section hidden flex-col items-center justify-center bg-slate-900 border border-slate-800 rounded-3xl p-4 sm:p-6 shadow-2xl">
+            <div class="w-full max-w-xl">
+                <div class="flex justify-between items-center mb-6 border-b border-slate-800 pb-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-chart-simple text-cyan-400"></i> <span data-i18n="statsTitle">Статистика</span>
+                        </h2>
+                        <p class="text-xs text-slate-400" data-i18n="statsSub">Твой прогресс и забота о глазах</p>
+                    </div>
+                    <button onclick="resetStats()" class="text-xs text-rose-400 hover:text-rose-300 border border-rose-800/50 px-3 py-1.5 rounded-lg transition">
+                        <i class="fa-solid fa-trash"></i> <span data-i18n="reset">Сброс</span>
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 mb-6" id="stats-grid"></div>
+
+                <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 mb-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-sm font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-eye text-cyan-400"></i> <span data-i18n="eyeCare">Забота о глазах</span>
+                        </span>
+                        <span id="stats-eye-score" class="text-lg font-black text-cyan-400 font-mono">0%</span>
+                    </div>
+                    <div class="w-full bg-slate-900 rounded-full h-3 overflow-hidden">
+                        <div id="stats-eye-bar" class="bg-gradient-to-r from-cyan-500 to-emerald-400 h-3 rounded-full transition-all duration-500" style="width: 0%;"></div>
+                    </div>
+                    <p id="stats-eye-text" class="text-xs text-slate-400 mt-2" data-i18n="firstBreak">Сделай первый перерыв!</p>
+                </div>
+
+                <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4">
+                    <h3 class="text-sm font-bold text-amber-400 mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-trophy"></i> <span data-i18n="achievements">Достижения</span>
+                    </h3>
+                    <div id="stats-achievements" class="grid grid-cols-2 gap-2"></div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Модальное окно перерыва -->
+    <div id="eye-rest-modal" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 hidden flex-col items-center justify-center p-6 text-center">
+        <div class="relative w-64 h-64 flex items-center justify-center mb-8">
+            <div class="absolute inset-0 rounded-full bg-cyan-500/20 pulse-animation"></div>
+            <div class="absolute inset-4 rounded-full bg-indigo-500/20 pulse-animation" style="animation-delay: 1s;"></div>
+            <div class="w-44 h-44 rounded-full bg-slate-900 border border-cyan-500/40 flex flex-col items-center justify-center z-10 shadow-2xl shadow-cyan-500/20">
+                <i class="fa-solid fa-eye text-4xl text-cyan-400 mb-2 animate-bounce"></i>
+                <div id="rest-countdown" class="text-4xl font-black text-white font-mono">20</div>
+                <div class="text-[10px] uppercase tracking-wider text-slate-400 mt-1" data-i18n="restSeconds">Секунд отдыха</div>
+            </div>
+        </div>
+
+        <div class="max-w-md bg-slate-900/80 border border-slate-800 p-6 rounded-2xl shadow-xl mb-6">
+            <h3 class="text-xl font-bold text-white mb-2 flex items-center justify-center gap-2">
+                <i class="fa-solid fa-seedling text-emerald-400"></i> <span data-i18n="restTitle">Время дать глазам отдохнуть!</span>
+            </h3>
+            <p id="rest-tip-text" class="text-slate-300 text-sm leading-relaxed">
+                Посмотри в окно или на самый дальний предмет в комнате. Поморгай часто и расслабь плечи.
+            </p>
+        </div>
+
+        <button id="skip-rest-btn" class="text-xs text-slate-500 hover:text-slate-300 transition underline" data-i18n="skipRest">
+            Пропустить перерыв (не рекомендуется)
+        </button>
+    </div>
+
+    <div id="yandex_rtb_R-A-20169679-1" style="position: fixed; bottom: 0; left: 0; width: 100%; z-index: 40; text-align: center; background: rgba(2, 6, 23, 0.95);"></div>
+
+    <footer class="bg-slate-900 border-t border-slate-800 py-3 px-4 text-center text-xs text-slate-500">
+        <span data-i18n="footer">Создано для защиты зрения и прокачки логики. Помни о правиле 20-20-20!</span>
+    </footer>
+
+    <script>
+        // ============================================
+        //  ЯЗЫКИ
+        // ============================================
+        const translations = {
+            ru: {
+                tagline: 'Играй и береги зрение!',
+                untilBreak: 'До перерыва',
+                restTime: 'Время отдыха:',
+                sec: 'сек',
+                min: 'мин',
+                navCatcher: 'Ловец',
+                navClicker: 'Кликер',
+                navQuiz: 'Викторина',
+                navStats: 'Стата',
+                catcherTitle: 'Ловец Кода',
+                catcherSub: 'Лови фичи `{ }`, избегай багов `🐛`!',
+                catcherDesc: 'Двигай платформу влево/вправо стрелками или пальцем по экрану.',
+                startGame: 'Начать игру',
+                score: 'Счет',
+                paused: 'ПАУЗА',
+                pauseDesc: 'Игра приостановлена. Отдохни немного!',
+                resume: '▶ Продолжить',
+                locText: 'строк кода (LoC)',
+                click: 'ЖМИ!',
+                autoScript: 'Авто-Скрипт',
+                autoDesc: '+1 код/сек',
+                coffeeBoost: 'Кофе-Буст',
+                coffeeDesc: '+1 к клику',
+                watchAd: 'Смотреть рекламу (Приз!)',
+                quizTitle: 'IT Викторина',
+                quizSub: 'Проверь свои знания и логику!',
+                statsTitle: 'Статистика',
+                statsSub: 'Твой прогресс и забота о глазах',
+                reset: 'Сброс',
+                eyeCare: 'Забота о глазах',
+                firstBreak: 'Сделай первый перерыв!',
+                achievements: 'Достижения',
+                restSeconds: 'Секунд отдыха',
+                restTitle: 'Время дать глазам отдохнуть!',
+                skipRest: 'Пропустить перерыв (не рекомендуется)',
+                footer: 'Создано для защиты зрения и прокачки логики. Помни о правиле 20-20-20!',
+                question: 'Вопрос',
+                correct: 'Правильно! +10 очков',
+                wrong: 'Неверно!',
+                timeOnScreen: 'За экраном',
+                breaks: 'Перерывов',
+                gamesPlayed: 'Игр',
+                daysWithApp: 'Дней',
+                catcherBest: 'Рекорд',
+                linesOfCode: 'Строк',
+                eyeScoreExcellent: '🏆 Отлично! Ты бережёшь зрение!',
+                eyeScoreGood: '👍 Хорошо! Продолжай!',
+                eyeScoreWarn: '⚠️ Стоит чаще делать перерывы',
+                eyeScoreBad: '🚨 Ты пропускаешь перерывы!',
+                restTips: [
+                    'Посмотри в окно на самый дальний объект или дерево.',
+                    'Часто поморгай в течение нескольких секунд, чтобы увлажнить глаза.',
+                    'Закрой глаза и мягко повращай глазными яблоками по кругу.',
+                    'Расслабь плечи и сделай глубокий вдох и медленный выдох.',
+                    'Посмотри в дальний угол комнаты, а затем на кончик своего носа.'
+                ],
+                achievementsList: {
+                    first_rest: 'Первый перерыв',
+                    rest_10: '10 перерывов',
+                    rest_100: '100 перерывов',
+                    catcher_100: 'Ловец 100',
+                    clicker_1000: '1000 LoC',
+                    quiz_50: '50 очков',
+                    day_7: '7 дней',
+                    perfect_eye: 'Идеальные глаза'
+                }
+            },
+            en: {
+                tagline: 'Play and protect your eyes!',
+                untilBreak: 'Until break',
+                restTime: 'Rest time:',
+                sec: 'sec',
+                min: 'min',
+                navCatcher: 'Catcher',
+                navClicker: 'Clicker',
+                navQuiz: 'Quiz',
+                navStats: 'Stats',
+                catcherTitle: 'Code Catcher',
+                catcherSub: 'Catch features `{ }`, avoid bugs `🐛`!',
+                catcherDesc: 'Move the platform left/right with arrows or finger on screen.',
+                startGame: 'Start Game',
+                score: 'Score',
+                paused: 'PAUSED',
+                pauseDesc: 'Game is paused. Take a rest!',
+                resume: '▶ Resume',
+                locText: 'lines of code (LoC)',
+                click: 'TAP!',
+                autoScript: 'Auto-Script',
+                autoDesc: '+1 code/sec',
+                coffeeBoost: 'Coffee Boost',
+                coffeeDesc: '+1 per click',
+                watchAd: 'Watch Ad (Reward!)',
+                quizTitle: 'IT Quiz',
+                quizSub: 'Test your knowledge and logic!',
+                statsTitle: 'Statistics',
+                statsSub: 'Your progress and eye care',
+                reset: 'Reset',
+                eyeCare: 'Eye Care',
+                firstBreak: 'Take your first break!',
+                achievements: 'Achievements',
+                restSeconds: 'Seconds of rest',
+                restTitle: 'Time to rest your eyes!',
+                skipRest: 'Skip break (not recommended)',
+                footer: 'Created to protect eyesight and boost logic. Remember the 20-20-20 rule!',
+                question: 'Question',
+                correct: 'Correct! +10 points',
+                wrong: 'Wrong!',
+                timeOnScreen: 'On screen',
+                breaks: 'Breaks',
+                gamesPlayed: 'Games',
+                daysWithApp: 'Days',
+                catcherBest: 'Best',
+                linesOfCode: 'LoC',
+                eyeScoreExcellent: '🏆 Excellent! You take care of your eyes!',
+                eyeScoreGood: '👍 Good! Keep it up!',
+                eyeScoreWarn: '⚠️ You should take breaks more often',
+                eyeScoreBad: '🚨 You skip too many breaks!',
+                restTips: [
+                    'Look out the window at the farthest object or tree.',
+                    'Blink frequently for a few seconds to moisturize your eyes.',
+                    'Close your eyes and gently roll your eyeballs in a circle.',
+                    'Relax your shoulders and take a deep breath and slow exhale.',
+                    'Look at the far corner of the room, then at the tip of your nose.'
+                ],
+                achievementsList: {
+                    first_rest: 'First Break',
+                    rest_10: '10 Breaks',
+                    rest_100: '100 Breaks',
+                    catcher_100: 'Catcher 100',
+                    clicker_1000: '1000 LoC',
+                    quiz_50: '50 Points',
+                    day_7: '7 Days',
+                    perfect_eye: 'Perfect Eyes'
+                }
+            }
+        };
+
+        let currentLang = localStorage.getItem('eyescare_lang') || 'ru';
+
+        function t(key) {
+            return translations[currentLang][key] || key;
+        }
+
+        function setLang(lang) {
+            currentLang = lang;
+            localStorage.setItem('eyescare_lang', lang);
+            document.documentElement.lang = lang;
+            
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                el.textContent = t(key);
+            });
+
+            document.getElementById('lang-ru').classList.toggle('active', lang === 'ru');
+            document.getElementById('lang-en').classList.toggle('active', lang === 'en');
+
+            updateClickerUI();
+
+            if (!document.getElementById('game-quiz').classList.contains('hidden')) {
+                loadQuizQuestion();
+            }
+
+            if (!document.getElementById('game-stats').classList.contains('hidden')) {
+                renderStats();
+            }
+
+            const categoryEl = document.getElementById('quiz-category');
+            if (categoryEl) {
+                const idx = currentQuizIndex + 1;
+                categoryEl.textContent = t('question') + ' ' + idx;
+            }
+        }
+
+        // ============================================
+        //  ЗВУКИ
+        // ============================================
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new AudioCtx();
+            }
+        }
+
+        function vibrate(ms) {
+            if (navigator.vibrate) {
+                navigator.vibrate(ms);
+            }
+        }
+
+        function playSound(type) {
+            try {
+                initAudio();
+                if (!audioCtx) return;
+
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                const now = audioCtx.currentTime;
+
+                if (type === 'catch') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(587.33, now);
+                    osc.frequency.exponentialRampToValueAtTime(880, now + 0.15);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                    osc.start(now);
+                    osc.stop(now + 0.15);
+                    vibrate(30);
+                } else if (type === 'click') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(300, now);
+                    gain.gain.setValueAtTime(0.1, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+                    osc.start(now);
+                    osc.stop(now + 0.05);
+                    vibrate(15);
+                } else if (type === 'chime-start') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(440, now);
+                    osc.frequency.exponentialRampToValueAtTime(880, now + 0.5);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+                    osc.start(now);
+                    osc.stop(now + 0.5);
+                    vibrate([100, 50, 100]);
+                } else if (type === 'chime-end') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(880, now);
+                    osc.frequency.exponentialRampToValueAtTime(440, now + 0.4);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                    osc.start(now);
+                    osc.stop(now + 0.4);
+                } else if (type === 'wrong') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(150, now);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                    osc.start(now);
+                    osc.stop(now + 0.2);
+                    vibrate(150);
+                }
+            } catch (e) {}
+        }
+
+        function requestNotificationPermission() {
+            if ("Notification" in window) {
+                if (Notification.permission !== "granted" && Notification.permission !== "denied") {
+                    Notification.requestPermission();
+                }
+            }
+        }
+
+        function sendSystemNotification() {
+            if ("Notification" in window && Notification.permission === "granted") {
+                const notification = new Notification(t('restTitle') + " 👀", {
+                    body: t('restTips')[0],
+                    icon: "./icons/icon-512x512.png"
+                });
+                notification.onclick = function() {
+                    window.focus();
+                    this.close();
+                };
+            }
+        }
+
+        // ============================================
+        //  СТАТИСТИКА
+        // ============================================
+        const STATS_KEY = 'eyescare_stats';
+        
+        function getStats() {
+            return JSON.parse(localStorage.getItem(STATS_KEY)) || {
+                totalTime: 0,
+                restCount: 0,
+                restSkipped: 0,
+                gamesPlayed: 0,
+                catcherBest: 0,
+                clickerScore: 0,
+                quizScore: 0,
+                quizCorrect: 0,
+                firstLaunch: Date.now(),
+                lastLaunch: Date.now()
+            };
+        }
+
+        function saveStats(stats) {
+            localStorage.setItem(STATS_KEY, JSON.stringify(stats));
+        }
+
+        function startTimeCounter() {
+            setInterval(() => {
+                const stats = getStats();
+                stats.totalTime += 1;
+                saveStats(stats);
+            }, 1000);
+        }
+
+        function renderStats() {
+            const stats = getStats();
+            const daysWithApp = Math.floor((Date.now() - stats.firstLaunch) / (1000 * 60 * 60 * 24)) + 1;
+            
+            const hours = Math.floor(stats.totalTime / 3600);
+            const minutes = Math.floor((stats.totalTime % 3600) / 60);
+            const timeStr = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+
+            const cards = [
+                { icon: '⏱️', label: t('timeOnScreen'), value: timeStr, color: 'text-cyan-400' },
+                { icon: '👁️', label: t('breaks'), value: stats.restCount, color: 'text-emerald-400' },
+                { icon: '🎮', label: t('gamesPlayed'), value: stats.gamesPlayed, color: 'text-indigo-400' },
+                { icon: '📅', label: t('daysWithApp'), value: daysWithApp, color: 'text-amber-400' },
+                { icon: '🐛', label: t('catcherBest'), value: stats.catcherBest, color: 'text-purple-400' },
+                { icon: '💻', label: t('linesOfCode'), value: stats.clickerScore, color: 'text-rose-400' }
+            ];
+
+            document.getElementById('stats-grid').innerHTML = cards.map(c => `
+                <div class="bg-slate-950 border border-slate-800 rounded-2xl p-3 text-center">
+                    <div class="text-2xl mb-1">${c.icon}</div>
+                    <div class="text-xs text-slate-400 mb-1">${c.label}</div>
+                    <div class="text-lg font-black ${c.color} font-mono">${c.value}</div>
+                </div>
+            `).join('');
+
+            const totalBreaks = stats.restCount + stats.restSkipped;
+            const eyeScore = totalBreaks > 0 ? Math.round((stats.restCount / totalBreaks) * 100) : 0;
+            
+            document.getElementById('stats-eye-score').textContent = eyeScore + '%';
+            document.getElementById('stats-eye-bar').style.width = eyeScore + '%';
+            
+            let eyeText = t('firstBreak');
+            if (eyeScore >= 90) eyeText = t('eyeScoreExcellent');
+            else if (eyeScore >= 70) eyeText = t('eyeScoreGood');
+            else if (eyeScore >= 50) eyeText = t('eyeScoreWarn');
+            else if (totalBreaks > 0) eyeText = t('eyeScoreBad');
+            
+            document.getElementById('stats-eye-text').textContent = eyeText;
+
+            const aL = translations[currentLang].achievementsList;
+
+            const achievements = [
+                { id: 'first_rest', icon: '🌱', name: aL.first_rest, unlocked: stats.restCount >= 1 },
+                { id: 'rest_10', icon: '👁️', name: aL.rest_10, unlocked: stats.restCount >= 10 },
+                { id: 'rest_100', icon: '🏆', name: aL.rest_100, unlocked: stats.restCount >= 100 },
+                { id: 'catcher_100', icon: '🐛', name: aL.catcher_100, unlocked: stats.catcherBest >= 100 },
+                { id: 'clicker_1000', icon: '💻', name: aL.clicker_1000, unlocked: stats.clickerScore >= 1000 },
+                { id: 'quiz_50', icon: '🧠', name: aL.quiz_50, unlocked: stats.quizScore >= 50 },
+                { id: 'day_7', icon: '📅', name: aL.day_7, unlocked: daysWithApp >= 7 },
+                { id: 'perfect_eye', icon: '⭐', name: aL.perfect_eye, unlocked: eyeScore === 100 && totalBreaks >= 10 }
+            ];
+
+            document.getElementById('stats-achievements').innerHTML = achievements.map(a => `
+                <div class="flex items-center gap-2 p-2 rounded-xl border ${a.unlocked ? 'bg-amber-950/40 border-amber-600/50' : 'bg-slate-900 border-slate-800 opacity-40'}">
+                    <span class="text-lg">${a.icon}</span>
+                    <span class="text-xs font-bold ${a.unlocked ? 'text-amber-300' : 'text-slate-500'}">${a.name}</span>
+                </div>
+            `).join('');
+        }
+
+        function resetStats() {
+            if (confirm('🗑️ Reset all stats?')) {
+                localStorage.removeItem(STATS_KEY);
+                renderStats();
+                alert('✅ Stats reset!');
+            }
+        }
+
+        // ============================================
+        //  ТАЙМЕР
+        // ============================================
+        const WORK_TIME_DEFAULT = 20 * 60;
+        let REST_TIME_DURATION = parseInt(localStorage.getItem('rest_duration') || '20');
+        
+        let targetTime = Date.now() + WORK_TIME_DEFAULT * 1000;
+        let workSecondsLeft = WORK_TIME_DEFAULT;
+        let restSecondsLeft = REST_TIME_DURATION;
+        let isResting = false;
+        let timerInterval = null;
+
+        const timerDisplay = document.getElementById('timer-display');
+        const restModal = document.getElementById('eye-rest-modal');
+        const restCountdown = document.getElementById('rest-countdown');
+        const skipRestBtn = document.getElementById('skip-rest-btn');
+
+        function setRestTime(seconds) {
+            REST_TIME_DURATION = seconds;
+            localStorage.setItem('rest_duration', seconds);
+            updateRestTimeButtonsUI();
+        }
+
+        function updateRestTimeButtonsUI() {
+            [10, 20, 30, 60].forEach(sec => {
+                const btn = document.getElementById(`rest-btn-${sec}`);
+                if (btn) {
+                    if (sec === REST_TIME_DURATION) {
+                        btn.className = "px-3 py-1.5 text-xs rounded-xl bg-cyan-500 text-slate-950 font-bold shadow-md border border-cyan-400";
+                    } else {
+                        btn.className = "px-3 py-1.5 text-xs rounded-xl border border-slate-700 bg-slate-950 text-slate-300 font-bold transition hover:bg-slate-800";
+                    }
+                }
+            });
+        }
+
+        function startMainTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+
+            timerInterval = setInterval(() => {
+                if (!isResting) {
+                    const now = Date.now();
+                    workSecondsLeft = Math.max(0, Math.round((targetTime - now) / 1000));
+                    updateTimerUI();
+
+                    if (workSecondsLeft <= 0) {
+                        triggerRestOverlay();
+                    }
+                } else {
+                    restSecondsLeft--;
+                    restCountdown.textContent = restSecondsLeft;
+
+                    if (restSecondsLeft <= 0) {
+                        endRestOverlay();
+                    }
+                }
+            }, 1000);
+        }
+
+        function updateTimerUI() {
+            const mins = Math.floor(workSecondsLeft / 60);
+            const secs = workSecondsLeft % 60;
+            timerDisplay.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function triggerRestOverlay() {
+            isResting = true;
+            restSecondsLeft = REST_TIME_DURATION;
+            restCountdown.textContent = restSecondsLeft;
+
+            const tips = translations[currentLang].restTips;
+            const randomTip = tips[Math.floor(Math.random() * tips.length)];
+            document.getElementById('rest-tip-text').textContent = randomTip;
+
+            restModal.classList.remove('hidden');
+            restModal.classList.add('flex');
+
+            playSound('chime-start');
+            sendSystemNotification();
+        }
+
+        function endRestOverlay() {
+            const stats = getStats();
+            stats.restCount += 1;
+            saveStats(stats);
+
+            isResting = false;
+            targetTime = Date.now() + WORK_TIME_DEFAULT * 1000;
+            workSecondsLeft = WORK_TIME_DEFAULT;
+            updateTimerUI();
+
+            restModal.classList.add('hidden');
+            restModal.classList.remove('flex');
+
+            playSound('chime-end');
+        }
+
+        skipRestBtn.addEventListener('click', () => {
+            const stats = getStats();
+            stats.restSkipped += 1;
+            saveStats(stats);
+            endRestOverlay();
+        });
+
+        function switchGame(gameKey) {
+            document.querySelectorAll('.game-section').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.game-nav-btn').forEach(btn => {
+                btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-md');
+                btn.classList.add('text-slate-400');
+            });
+
+            const activeSection = document.getElementById(`game-${gameKey}`);
+            const activeBtn = document.getElementById(`nav-${gameKey}`);
+
+            if (activeSection && activeBtn) {
+                activeSection.classList.remove('hidden');
+                activeSection.classList.add('flex');
+                
+                activeBtn.classList.add('bg-indigo-600', 'text-white', 'shadow-md');
+                activeBtn.classList.remove('text-slate-400');
+            }
+
+            if (gameKey === 'catcher') {
+                resizeCanvas();
+            } else {
+                if (catcherGameRunning && !catcherPaused) {
+                    togglePauseCatcher();
+                }
+            }
+            
+            if (gameKey === 'stats') {
+                renderStats();
+            }
+            
+            if (['catcher', 'clicker', 'quiz'].includes(gameKey)) {
+                const stats = getStats();
+                stats.gamesPlayed += 1;
+                saveStats(stats);
+            }
+        }
+
+        // --- ИГРА 1: Ловец Кода ---
+        const canvas = document.getElementById('catcherCanvas');
+        const ctx = canvas.getContext('2d');
+        const catcherScoreEl = document.getElementById('catcher-score');
+        const catcherStartScreen = document.getElementById('catcher-start-screen');
+
+        let catcherScore = 0;
+        let catcherGameRunning = false;
+        let catcherPaused = false;
+        let paddle = { x: 0, width: 80, height: 14, speed: 7 };
+        let items = [];
+        let catcherAnimationId = null;
+        let moveLeft = false;
+        let moveRight = false;
+
+        function resizeCanvas() {
+            if (!canvas.parentElement) return;
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+            if (!catcherGameRunning) {
+                paddle.x = canvas.width / 2 - paddle.width / 2;
+            }
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+
+        function startCatcherGame() {
+            resizeCanvas();
+            catcherScore = 0;
+            catcherScoreEl.textContent = catcherScore;
+            items = [];
+            paddle.x = canvas.width / 2 - paddle.width / 2;
+            catcherGameRunning = true;
+            catcherPaused = false;
+            catcherStartScreen.classList.add('hidden');
+            document.getElementById('catcher-pause-screen').classList.add('hidden');
+            document.getElementById('catcher-pause-screen').classList.remove('flex');
+            document.getElementById('pause-btn').classList.remove('hidden');
+            document.getElementById('pause-icon').className = 'fa-solid fa-pause';
+
+            if (catcherAnimationId) cancelAnimationFrame(catcherAnimationId);
+            gameLoopCatcher();
+        }
+
+        function togglePauseCatcher() {
+            if (!catcherGameRunning) return;
+            
+            catcherPaused = !catcherPaused;
+            const pauseScreen = document.getElementById('catcher-pause-screen');
+            const pauseIcon = document.getElementById('pause-icon');
+            
+            if (catcherPaused) {
+                pauseScreen.classList.remove('hidden');
+                pauseScreen.classList.add('flex');
+                pauseIcon.className = 'fa-solid fa-play';
+                playSound('click');
+            } else {
+                pauseScreen.classList.add('hidden');
+                pauseScreen.classList.remove('flex');
+                pauseIcon.className = 'fa-solid fa-pause';
+                playSound('click');
+            }
+        }
+
+        function spawnCatcherItem() {
+            if (Math.random() < 0.04) {
+                const isBug = Math.random() < 0.3;
+                items.push({
+                    x: Math.random() * (canvas.width - 30) + 15,
+                    y: -20,
+                    speed: 2.5 + Math.random() * 2.5,
+                    isBug: isBug,
+                    text: isBug ? '🐛' : (Math.random() > 0.5 ? '{ }' : '</>')
+                });
+            }
+        }
+
+        function gameLoopCatcher() {
+            if (!catcherGameRunning) return;
+            
+            if (catcherPaused) {
+                catcherAnimationId = requestAnimationFrame(gameLoopCatcher);
+                return;
+            }
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (moveLeft && paddle.x > 0) paddle.x -= paddle.speed;
+            if (moveRight && paddle.x + paddle.width < canvas.width) paddle.x += paddle.speed;
+
+            ctx.fillStyle = '#6366f1';
+            ctx.beginPath();
+            if (ctx.roundRect) {
+                ctx.roundRect(paddle.x, canvas.height - 25, paddle.width, paddle.height, 8);
+            } else {
+                ctx.rect(paddle.x, canvas.height - 25, paddle.width, paddle.height);
+            }
+            ctx.fill();
+
+            spawnCatcherItem();
+
+            for (let i = items.length - 1; i >= 0; i--) {
+                let item = items[i];
+                item.y += item.speed;
+
+                ctx.font = item.isBug ? '22px sans-serif' : 'bold 16px monospace';
+                ctx.fillStyle = item.isBug ? '#ef4444' : '#38bdf8';
+                ctx.textAlign = 'center';
+                ctx.fillText(item.text, item.x, item.y);
+
+                if (
+                    item.y >= canvas.height - 35 &&
+                    item.y <= canvas.height - 10 &&
+                    item.x >= paddle.x &&
+                    item.x <= paddle.x + paddle.width
+                ) {
+                    if (item.isBug) {
+                        catcherScore = Math.max(0, catcherScore - 5);
+                        playSound('wrong');
+                    } else {
+                        catcherScore += 10;
+                        playSound('catch');
+                        const stats = getStats();
+                        if (catcherScore > stats.catcherBest) {
+                            stats.catcherBest = catcherScore;
+                            saveStats(stats);
+                        }
+                    }
+                    catcherScoreEl.textContent = catcherScore;
+                    items.splice(i, 1);
+                    continue;
+                }
+
+                if (item.y > canvas.height + 20) {
+                    items.splice(i, 1);
+                }
+            }
+
+            catcherAnimationId = requestAnimationFrame(gameLoopCatcher);
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') moveLeft = true;
+            if (e.key === 'ArrowRight') moveRight = true;
+        });
+
+        document.addEventListener('keyup', (e) => {
+            if (e.key === 'ArrowLeft') moveLeft = false;
+            if (e.key === 'ArrowRight') moveRight = false;
+        });
+
+        const btnLeft = document.getElementById('btn-move-left');
+        const btnRight = document.getElementById('btn-move-right');
+
+        btnLeft.addEventListener('touchstart', (e) => { e.preventDefault(); moveLeft = true; });
+        btnLeft.addEventListener('touchend', (e) => { e.preventDefault(); moveLeft = false; });
+        btnRight.addEventListener('touchstart', (e) => { e.preventDefault(); moveRight = true; });
+        btnRight.addEventListener('touchend', (e) => { e.preventDefault(); moveRight = false; });
+
+        canvas.addEventListener('touchmove', (e) => {
+            if (!catcherGameRunning || catcherPaused) return;
+            const rect = canvas.getBoundingClientRect();
+            const touchX = e.touches[0].clientX - rect.left;
+            paddle.x = Math.max(0, Math.min(canvas.width - paddle.width, touchX - paddle.width / 2));
+        });
+
+        // --- ИГРА 2: Dev Кликер ---
+        let clickerScore = parseInt(localStorage.getItem('dev_clicker_score') || '0');
+        let clickerPower = parseInt(localStorage.getItem('dev_clicker_power') || '1');
+        let autoClickers = parseInt(localStorage.getItem('dev_clicker_auto') || '0');
+        let costAuto = parseInt(localStorage.getItem('dev_clicker_cost_auto') || '15');
+        let costMult = parseInt(localStorage.getItem('dev_clicker_cost_mult') || '30');
+
+        const clickerCountEl = document.getElementById('clicker-count');
+        const clickerBtn = document.getElementById('clicker-btn');
+        const clickerRankEl = document.getElementById('clicker-rank');
+        const costAutoEl = document.getElementById('cost-auto');
+        const costMultEl = document.getElementById('cost-mult');
+
+        function updateClickerUI() {
+            clickerCountEl.textContent = clickerScore;
+            costAutoEl.textContent = `${costAuto} LoC`;
+            costMultEl.textContent = `${costMult} LoC`;
+
+            if (clickerScore >= 500) clickerRankEl.textContent = "Senior Architect 🚀";
+            else if (clickerScore >= 200) clickerRankEl.textContent = "Middle Developer 💻";
+            else if (clickerScore >= 50) clickerRankEl.textContent = "Junior Developer ☕";
+            else clickerRankEl.textContent = "Intern Trainee 🐣";
+
+            localStorage.setItem('dev_clicker_score', clickerScore);
+            localStorage.setItem('dev_clicker_power', clickerPower);
+            localStorage.setItem('dev_clicker_auto', autoClickers);
+            localStorage.setItem('dev_clicker_cost_auto', costAuto);
+            localStorage.setItem('dev_clicker_cost_mult', costMult);
+
+            const stats = getStats();
+            stats.clickerScore = clickerScore;
+            saveStats(stats);
+        }
+
+        clickerBtn.addEventListener('click', () => {
+            clickerScore += clickerPower;
+            playSound('click');
+            updateClickerUI();
+        });
+
+        function buyClickerUpgrade(type) {
+            if (type === 'auto' && clickerScore >= costAuto) {
+                clickerScore -= costAuto;
+                autoClickers++;
+                costAuto = Math.floor(costAuto * 1.5);
+                playSound('catch');
+            } else if (type === 'mult' && clickerScore >= costMult) {
+                clickerScore -= costMult;
+                clickerPower += 1;
+                costMult = Math.floor(costMult * 1.8);
+                playSound('catch');
+            }
+            updateClickerUI();
+        }
+
+        function watchAdForReward() {
+            giveRandomReward();
+        }
+
+        function giveRandomReward() {
+            const roll = Math.random() * 100;
+            let rewardText = "";
+
+            if (roll < 1) {
+                autoClickers += 1000;
+                rewardText = "🎉 JACKPOT! +1000 auto-clicks!";
+            } else if (roll < 5) {
+                clickerPower += 1000;
+                rewardText = "🔥 LEGENDARY! +1000 per click!";
+            } else if (roll < 11) {
+                autoClickers += 100;
+                rewardText = "⚡ EPIC! +100 auto-clicks!";
+            } else if (roll < 21) {
+                autoClickers += 10;
+                rewardText = "🤖 RARE! +10 auto-clicks!";
+            } else if (roll < 46) {
+                clickerScore += 1000;
+                rewardText = "🚀 AWESOME! +1000 LoC!";
+            } else {
+                clickerScore += 100;
+                rewardText = "💻 GREAT! +100 LoC!";
+            }
+
+            playSound('catch');
+            updateClickerUI();
+            alert(rewardText);
+        }
+
+        setInterval(() => {
+            if (autoClickers > 0) {
+                clickerScore += autoClickers;
+                updateClickerUI();
+            }
+        }, 1000);
+
+        // --- ИГРА 3: IT Викторина ---
+        const quizQuestions = [
+            { q: "Какое правило помогает защитить глаза?", options: ["10-10-10", "20-20-20", "50-50", "Правило 1 часа"], correct: 1, cat: "Здоровье" },
+            { q: "Что выведет: console.log(typeof []);?", options: ["array", "object", "undefined", "list"], correct: 1, cat: "Код" },
+            { q: "Преимущество перерыва для глаз?", options: ["Расслабление глазных мышц", "Яркость экрана", "Скорость ПК", "Ничего"], correct: 0, cat: "Здоровье" },
+            { q: "Что делает '===' в JavaScript?", options: ["Присваивает", "Сравнивает без типов", "Строго сравнивает значение и тип", "Создает массив"], correct: 2, cat: "Код" },
+            { q: "Что происходит с зрением от долгого телефона?", options: ["Улучшается", "Ничего", "Передает данные", "Ухудшается"], correct: 3, cat: "Здоровье" },
+            { q: "Что тут лишнее?", options: ["C++", "JS", "Python", "Лондон"], correct: 3, cat: "Код" }
+        ];
+
+        let currentQuizIndex = 0;
+        let quizScore = parseInt(localStorage.getItem('quiz_score') || '0');
+
+        const quizQuestionEl = document.getElementById('quiz-question');
+        const quizOptionsEl = document.getElementById('quiz-options');
+        const quizCategoryEl = document.getElementById('quiz-category');
+        const quizScoreEl = document.getElementById('quiz-score');
+        const quizFeedbackEl = document.getElementById('quiz-feedback');
+
+        function loadQuizQuestion() {
+            quizScoreEl.textContent = quizScore;
+            const q = quizQuestions[currentQuizIndex];
+            quizQuestionEl.textContent = q.q;
+            quizCategoryEl.textContent = t('question') + ' ' + (currentQuizIndex + 1);
+            quizFeedbackEl.textContent = '';
+            quizOptionsEl.innerHTML = '';
+
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left bg-slate-950 hover:bg-slate-800 border border-slate-800 p-4 rounded-xl text-sm font-medium text-slate-200 transition active:scale-98 flex items-center justify-between";
+                btn.innerHTML = `<span>${opt}</span> <i class="fa-regular fa-circle text-slate-600"></i>`;
+                btn.onclick = () => checkQuizAnswer(idx, btn);
+                quizOptionsEl.appendChild(btn);
+            });
+        }
+
+        function checkQuizAnswer(selectedIdx, btn) {
+            const q = quizQuestions[currentQuizIndex];
+            const buttons = quizOptionsEl.querySelectorAll('button');
+            buttons.forEach(b => b.disabled = true);
+
+            if (selectedIdx === q.correct) {
+                btn.classList.add('bg-emerald-950', 'border-emerald-600', 'text-emerald-300');
+                btn.querySelector('i').className = "fa-solid fa-circle-check text-emerald-400";
+                quizFeedbackEl.textContent = t('correct');
+                quizFeedbackEl.className = "mt-4 text-center text-sm font-semibold text-emerald-400";
+                
+                quizScore += 10;
+                quizScoreEl.textContent = quizScore;
+                localStorage.setItem('quiz_score', quizScore);
+
+                const stats = getStats();
+                stats.quizScore = quizScore;
+                stats.quizCorrect += 1;
+                saveStats(stats);
+
+                playSound('catch');
+            } else {
+                btn.classList.add('bg-rose-950', 'border-rose-600', 'text-rose-300');
+                btn.querySelector('i').className = "fa-solid fa-circle-xmark text-rose-400";
+                quizFeedbackEl.textContent = t('wrong');
+                quizFeedbackEl.className = "mt-4 text-center text-sm font-semibold text-rose-400";
+                playSound('wrong');
+            }
+
+            setTimeout(() => {
+                currentQuizIndex = (currentQuizIndex + 1) % quizQuestions.length;
+                loadQuizQuestion();
+            }, 1500);
+        }
+
+        window.onload = function() {
+            const stats = getStats();
+            stats.lastLaunch = Date.now();
+            if (!stats.firstLaunch) stats.firstLaunch = Date.now();
+            saveStats(stats);
+            
+            startTimeCounter();
+            
+            requestNotificationPermission();
+            startMainTimer();
+            updateRestTimeButtonsUI();
+            updateClickerUI();
+            loadQuizQuestion();
+            setTimeout(resizeCanvas, 100);
+            
+            setLang(currentLang);
+
+            window.yaContextCb = window.yaContextCb || [];
+            window.yaContextCb.push(() => {
+                Ya.Context.AdvManager.render({
+                    "blockId": "R-A-20169679-1",
+                    "renderTo": "yandex_rtb_R-A-20169679-1"
+                });
+            });
+        };
+
+        // ============================================
+        //  РЕГИСТРАЦИЯ SERVICE WORKER
+        // ============================================
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then((registration) => {
+                        console.log('✅ SW зарегистрирован:', registration.scope);
+                    })
+                    .catch((error) => {
+                        console.error('❌ Ошибка SW:', error);
+                    });
+            });
+        }
+
+        // ============================================
+        //  БЛОКИРОВКА СВАЙПА ДЛЯ ОБНОВЛЕНИЯ
+        // ============================================
+        let lastTouchY = 0;
+        let isPullingDown = false;
+
+        document.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) {
+                lastTouchY = e.touches[0].clientY;
+                isPullingDown = window.scrollY === 0;
+            }
+        }, { passive: true });
+
+        document.addEventListener('touchmove', (e) => {
+            if (!isPullingDown || e.touches.length !== 1) return;
+            const currentY = e.touches[0].clientY;
+            const deltaY = currentY - lastTouchY;
+            if (window.scrollY === 0 && deltaY > 10) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        document.addEventListener('touchend', () => {
+            isPullingDown = false;
+        }, { passive: true });
+    </script>
+</body>
+</html>
