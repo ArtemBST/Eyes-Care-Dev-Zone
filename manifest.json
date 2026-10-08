@@ -1,15 +1,19 @@
 {
+    "id": "com.artemstudios.eyecare",
     "name": "Eye Care & Dev Zone",
     "short_name": "EyeCare",
-    "description": "Играй, береги зрение и прокачивай скиллы разработчика!",
+    "description": "Играй, береги зрение и прокачивай скиллы разработчика! Таймер 20-20-20, мини-игры и статистика.",
     "lang": "ru",
+    "dir": "ltr",
     "start_url": "./index.html",
     "scope": "./",
     "display": "standalone",
+    "display_override": ["standalone", "minimal-ui"],
     "orientation": "portrait",
     "theme_color": "#4f46e5",
     "background_color": "#020617",
     "categories": ["health", "education", "games"],
+    "prefer_related_applications": false,
     "icons": [
         {
             "src": "icons/icon-512x512.png",
@@ -22,6 +26,32 @@
             "sizes": "512x512",
             "type": "image/png",
             "purpose": "maskable"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "Ловец Кода",
+            "short_name": "Ловец",
+            "description": "Играть в Ловца Кода",
+            "url": "./app.html?game=catcher"
+        },
+        {
+            "name": "Dev Кликер",
+            "short_name": "Кликер",
+            "description": "Играть в Dev Кликер",
+            "url": "./app.html?game=clicker"
+        },
+        {
+            "name": "IT Викторина",
+            "short_name": "Викторина",
+            "description": "Пройти IT викторину",
+            "url": "./app.html?game=quiz"
+        },
+        {
+            "name": "Статистика",
+            "short_name": "Стата",
+            "description": "Посмотреть статистику",
+            "url": "./app.html?game=stats"
         }
     ]
 }
