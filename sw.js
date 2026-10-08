@@ -1,12 +1,12 @@
 // ============================================
 //  Service Worker для Eye Care & Dev Zone
-//  Версия кэша
+//  Версия: 1.1.0
 // ============================================
 const CACHE_NAME = 'eyecare-v1.1.0';
 const RUNTIME_CACHE = 'eyecare-runtime-v1.1.0';
 
 // ============================================
-//  Файлы для кэширования (офлайн-режим)
+//  Файлы для кэширования
 // ============================================
 const PRECACHE_URLS = [
     './',
@@ -14,25 +14,22 @@ const PRECACHE_URLS = [
     './app.html',
     './manifest.json',
     './icons/icon-512x512.png',
-    // Внешние библиотеки (Tailwind, Font Awesome)
     'https://cdn.tailwindcss.com',
     'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
-    // Шрифты
     'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap'
 ];
 
 // ============================================
-//  УСТАНОВКА — кэшируем основные файлы
+//  УСТАНОВКА
 // ============================================
 self.addEventListener('install', (event) => {
-    console.log('🔧 Service Worker: Установка...');
+    console.log('🔧 SW: Установка v1.1.0...');
     
     event.waitUntil(
         caches.open(CACHE_NAME)
             .then((cache) => {
-                console.log('📦 Кэшируем основные файлы...');
+                console.log('📦 Кэшируем файлы...');
                 return cache.addAll(PRECACHE_URLS.map(url => {
-                    // Для внешних ресурсов используем no-cors
                     if (url.startsWith('http')) {
                         return new Request(url, { mode: 'no-cors' });
                     }
@@ -40,20 +37,20 @@ self.addEventListener('install', (event) => {
                 }));
             })
             .then(() => {
-                console.log('✅ Service Worker: Установлен!');
+                console.log('✅ SW: Установлен!');
                 return self.skipWaiting();
             })
             .catch((error) => {
-                console.error('❌ Ошибка кэширования:', error);
+                console.error('❌ Ошибка кэша:', error);
             })
     );
 });
 
 // ============================================
-//  АКТИВАЦИЯ — очищаем старые кэши
+//  АКТИВАЦИЯ
 // ============================================
 self.addEventListener('activate', (event) => {
-    console.log('🚀 Service Worker: Активация...');
+    console.log('🚀 SW: Активация...');
     
     event.waitUntil(
         caches.keys()
@@ -70,34 +67,32 @@ self.addEventListener('activate', (event) => {
                 );
             })
             .then(() => {
-                console.log('✅ Service Worker: Активирован!');
+                console.log('✅ SW: Активирован!');
                 return self.clients.claim();
             })
     );
 });
 
 // ============================================
-//  FETCH — стратегия кэширования
+//  FETCH
 // ============================================
 self.addEventListener('fetch', (event) => {
     const { request } = event;
     const url = new URL(request.url);
 
-    // Пропускаем запросы к API Яндекс.Рекламы
+    // Пропускаем Яндекс.Рекламу
     if (url.hostname.includes('yandex.ru') || 
         url.hostname.includes('yandex.net') ||
         url.hostname.includes('ads')) {
         return;
     }
 
-    // Пропускаем запросы, отличные от GET
+    // Только GET
     if (request.method !== 'GET') {
         return;
     }
 
-    // ============================================
-    //  Стратегия: Network First для HTML
-    // ============================================
+    // Network First для HTML
     if (request.headers.get('accept')?.includes('text/html')) {
         event.respondWith(
             fetch(request)
@@ -117,14 +112,11 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
-    // ============================================
-    //  Стратегия: Cache First для всего остального
-    // ============================================
+    // Cache First для остального
     event.respondWith(
         caches.match(request)
             .then((cachedResponse) => {
                 if (cachedResponse) {
-                    // Обновляем кэш в фоне
                     fetch(request)
                         .then((response) => {
                             if (response && response.status === 200) {
@@ -139,7 +131,6 @@ self.addEventListener('fetch', (event) => {
                     return cachedResponse;
                 }
 
-                // Если нет в кэше — загружаем из сети
                 return fetch(request)
                     .then((response) => {
                         if (!response || response.status !== 200 || response.type === 'opaque') {
@@ -154,7 +145,6 @@ self.addEventListener('fetch', (event) => {
                         return response;
                     })
                     .catch(() => {
-                        // Для картинок возвращаем заглушку
                         if (request.destination === 'image') {
                             return caches.match('./icons/icon-512x512.png');
                         }
@@ -164,7 +154,7 @@ self.addEventListener('fetch', (event) => {
 });
 
 // ============================================
-//  ОБРАБОТКА СООБЩЕНИЙ
+//  СООБЩЕНИЯ
 // ============================================
 self.addEventListener('message', (event) => {
     if (event.data && event.data.type === 'SKIP_WAITING') {
@@ -181,7 +171,7 @@ self.addEventListener('message', (event) => {
 });
 
 // ============================================
-//  PUSH-УВЕДОМЛЕНИЯ (для будущего)
+//  PUSH-УВЕДОМЛЕНИЯ
 // ============================================
 self.addEventListener('push', (event) => {
     const data = event.data ? event.data.json() : {};
@@ -213,16 +203,4 @@ self.addEventListener('notificationclick', (event) => {
     );
 });
 
-// ============================================
-//  BACKGROUND SYNC (для будущего)
-// ============================================
-self.addEventListener('sync', (event) => {
-    if (event.tag === 'sync-stats') {
-        event.waitUntil(
-            // Здесь можно синхронизировать статистику с сервером
-            Promise.resolve()
-        );
-    }
-});
-
-console.log('🎉 Service Worker загружен!');
+console.log('🎉 Service Worker v1.1.0 загружен!');
